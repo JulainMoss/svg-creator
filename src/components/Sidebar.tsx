@@ -1,6 +1,6 @@
 // import React from 'react';
 
-const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, shapes, removeShape, downloadSvg, canvasSize, setCanvasSize }) => {
+const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, shapes, removeShape, downloadSvg, canvasSize, setCanvasSize, handleImageUpload, bgImage, setBgImage }) => {
   return (
     <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '10px', borderRight: '1px solid #eee', paddingRight: '20px' }}>
       <h2>SVG Builder</h2>
@@ -60,6 +60,21 @@ const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, sha
       >
         💾 Pobierz plik .SVG
       </button>
+      <label>Obraz tła:</label>
+      <input 
+        type="file" 
+        accept="image/*" 
+        onChange={handleImageUpload} 
+        style={{ fontSize: '12px' }}
+      />
+      {bgImage && (
+        <button 
+          onClick={() => setBgImage('')} 
+          style={{ marginTop: '5px', color: 'red', cursor: 'pointer' }}
+        >
+          Usuń tło
+        </button>
+      )}
     </div>
   );
 };

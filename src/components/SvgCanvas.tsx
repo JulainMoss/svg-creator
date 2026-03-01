@@ -1,7 +1,7 @@
 import React from 'react';
 import ShapeItem from './ShapeItem';
 
-const SvgCanvas = ({ shapes, canvasRef, canvasSize }) => {
+const SvgCanvas = ({ shapes, canvasRef, canvasSize, bgImage }) => {
   return (
     <div style={{ 
         border: '2px solid #333', 
@@ -13,12 +13,23 @@ const SvgCanvas = ({ shapes, canvasRef, canvasSize }) => {
         display: 'inline-block' // Kontener dopasuje się do krawędzi SVG
         }}>
       <svg 
-        ref={canvasRef} // To pozwala nam pobrać zawartość SVG do pliku
+        ref={canvasRef}
         width={canvasSize.width} 
         height={canvasSize.height} 
         viewBox={`0 0 ${canvasSize.width} ${canvasSize.height}`}
-        xmlns="http://www.w3.org/2000/svg" // Ważne dla poprawnego odczytu pliku przez inne programy
+        xmlns="http://www.w3.org/2000/svg"
       >
+        {/* Obrazek tła */}
+        {bgImage && (
+          <image 
+            href={bgImage} 
+            width="100%" 
+            height="100%" 
+            preserveAspectRatio="xMidYMid slice" 
+          />
+        )}
+
+        {/* Kształty użytkownika */}
         {shapes.map((shape) => (
           <ShapeItem key={shape.id} shape={shape} />
         ))}

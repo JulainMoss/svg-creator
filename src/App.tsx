@@ -7,9 +7,39 @@ const App = () => {
   const [selectedType, setSelectedType] = useState('rect');
   const [color, setColor] = useState('#3498db');
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 600 });
+  const [bgImage, setBgImage] = useState('');
   
   // Ref do elementu SVG
   const svgRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        // Tutaj mamy dostęp do wymiarów pliku
+        console.log(`Szerokość: ${img.width}px, Wysokość: ${img.height}px`);
+
+        // Opcjonalnie: Automatycznie ustaw rozmiar płótna na rozmiar zdjęcia
+        setCanvasSize({
+          width: img.width,
+          height: img.height
+        });
+
+        // Ustaw tło (Base64)
+        setBgImage(event.target.result);
+      };
+
+      img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   const addShape = () => {
     const newShape = {
@@ -56,8 +86,11 @@ const App = () => {
         downloadSvg={downloadSvg}
         canvasSize={canvasSize}
         setCanvasSize={setCanvasSize}
+        handleImageUpload={handleImageUpload}
+        bgImage={bgImage}
+        setBgImage={setBgImage}
       />
-      <SvgCanvas shapes={shapes} canvasRef={svgRef} canvasSize={canvasSize} />
+      <SvgCanvas shapes={shapes} canvasRef={svgRef} canvasSize={canvasSize} bgImage={bgImage}/>
     </div>
   );
 };
