@@ -9,15 +9,39 @@ const App = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 600 });
   const [bgImage, setBgImage] = useState('');
   const [previewShape, setPreviewShape] = useState(null);
+  const [selectedShapeId, setSelectedShapeId] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isDraggingShape, setIsDraggingShape] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
-    // Pobieramy pozycję myszy względem elementu SVG
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    // 1. Sprawdzamy, czy kliknęliśmy w już zaznaczony kształt
+    // e.target to element, w który faktycznie kliknięto (np. <rect>)
+    // sprawdzamy, czy to nie jest samo tło SVG
+    const clickedOnShape = e.target !== svg;
+
+    if (clickedOnShape && selectedShapeId) {
+      // SCENARIUSZ A: PRZESUWANIE
+      const shapeToMove = shapes.find(s => s.id === selectedShapeId);
+      
+      if (shapeToMove) {
+        setIsDraggingShape(true);
+        // Obliczamy różnicę między kursoerem a lewym górnym rogiem kształtu
+        setDragOffset({
+          x: x - shapeToMove.x,
+          y: y - shapeToMove.y
+        });
+        return; // Przerywamy, żeby nie zacząć rysować nowego kształtu!
+      }
+    }
+
+    // SCENARIUSZ B: RYSOWANIE NOWEGO (jeśli nie przesuwamy)
+    setSelectedShapeId(null); // Odznaczamy stary, bo zaczynamy nowy
     setIsDrawing(true);
     setPreviewShape({
       id: 'preview',
@@ -32,15 +56,36 @@ const App = () => {
     });
   };
 
-  const handleMouseMove = (e) => {
-    if (!isDrawing || !previewShape) return;
 
+  const updateSelectedShape = (updates) => {
+    // updates to obiekt np. { x: 10, y: 20 }
+    setShapes(prevShapes => 
+      prevShapes.map(shape => 
+        shape.id === selectedShapeId ? { ...shape, ...updates } : shape
+      )
+    );
+  };
+
+  const selectedShape = shapes.find(s => s.id === selectedShapeId);
+
+  const handleMouseMove = (e) => {
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
-    // Obliczamy wymiary (obsługujemy przeciąganie w każdą stronę)
+    // LOGIKA PRZESUWANIA - TERAZ W OBU OSIACH
+    if (isDraggingShape && selectedShapeId) {
+      const newX = currentX - dragOffset.x;
+      const newY = currentY - dragOffset.y;
+      
+      // Aktualizujemy obie osie naraz jednym wywołaniem
+      updateSelectedShape({ x: newX, y: newY });
+      return;
+    }
+
+    if (!isDrawing || !previewShape) return;
+
     const newWidth = Math.abs(currentX - previewShape.startX);
     const newHeight = Math.abs(currentY - previewShape.startY);
     const newX = Math.min(currentX, previewShape.startX);
@@ -56,15 +101,20 @@ const App = () => {
   };
 
   const handleMouseUp = () => {
-    if (!isDrawing || !previewShape) return;
-
-    // Zapisujemy kształt na stałe, jeśli nie jest "kropką"
-    if (previewShape.width > 5 || previewShape.height > 5) {
-      setShapes([...shapes, { ...previewShape, id: Date.now() }]);
+    // Jeśli rysowaliśmy nowy kształt
+    if (isDrawing && previewShape) {
+      if (previewShape.width > 5 || previewShape.height > 5) {
+        setShapes(prev => [...prev, { ...previewShape, id: Date.now() }]);
+      }
     }
     
+    // RESETOWANIE STANÓW
     setIsDrawing(false);
+    setIsDraggingShape(false);
     setPreviewShape(null);
+    
+    // OPCJONALNIE: Odznaczanie przy puszczeniu myszy
+    // setSelectedShapeId(null); 
   };
   
   // Ref do elementu SVG
@@ -166,9 +216,23 @@ const App = () => {
         handleImageUpload={handleImageUpload}
         bgImage={bgImage}
         setBgImage={setBgImage}
+        updateSelectedShape={updateSelectedShape}
+        selectedShape={selectedShape}
+        setSelectedShapeId={setSelectedShapeId}
       />
       {/* shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, canvasRef, canvasSize, bgImage */}
-      <SvgCanvas shapes={shapes} previewShape={previewShape} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} canvasRef={svgRef} canvasSize={canvasSize} bgImage={bgImage}/>
+      <SvgCanvas 
+        shapes={shapes} 
+        previewShape={previewShape} 
+        onMouseDown={handleMouseDown} 
+        onMouseMove={handleMouseMove} 
+        onMouseUp={handleMouseUp} 
+        canvasRef={svgRef} 
+        canvasSize={canvasSize} 
+        bgImage={bgImage}
+        selectedShapeId={selectedShapeId}
+        setSelectedShapeId={setSelectedShapeId}
+      />
     </div>
   );
 };

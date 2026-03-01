@@ -1,7 +1,36 @@
 import { useRef } from 'react';
+import RectSelect from './RectSelect';
+import CircleSelect from './CircleSelect';
 
-const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, shapes, removeShape, downloadSvg, canvasSize, setCanvasSize, handleImageUpload, bgImage, setBgImage }) => {
+
+const Sidebar = ({ 
+  selectedType,
+  setSelectedType, 
+  color, 
+  setColor, 
+  shapes, 
+  removeShape, 
+  downloadSvg, 
+  canvasSize, 
+  setCanvasSize, 
+  handleImageUpload, 
+  bgImage, 
+  setBgImage, 
+  updateSelectedShape, 
+  selectedShape,
+  setSelectedShapeId
+  }) => {
+  
   const fileInputRef = useRef(null);
+  let editWindow;
+  if (selectedShape) {
+    if (selectedShape.type === 'rect') {
+      editWindow = <RectSelect selectedShape={selectedShape} updateSelectedShape={updateSelectedShape} setSelectedShapeId={setSelectedShapeId} />;
+    } else if (selectedShape.type === 'circle') {
+      editWindow = <CircleSelect selectedShape={selectedShape} updateSelectedShape={updateSelectedShape} setSelectedShapeId={setSelectedShapeId} />;
+    }
+  }
+  // console.log("Sidebar renderuje, selectedShape:", selectedShape);
 
   return (
     <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '10px', borderRight: '1px solid #eee', paddingRight: '20px' }}>
@@ -15,10 +44,6 @@ const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, sha
 
       <label>Kolor:</label>
       <input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: '100%' }} />
-
-      <button onClick={addShape} style={{ padding: '10px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        Dodaj kształt
-      </button>
       <label>Rozmiar płótna:</label>
       <div style={{ display: 'flex', gap: '10px' }}>
         <input 
@@ -38,6 +63,10 @@ const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, sha
         />
       </div>
       <hr />
+
+      {selectedShape && (
+        editWindow
+      )}
 
       <h3>Warstwy</h3>
       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>

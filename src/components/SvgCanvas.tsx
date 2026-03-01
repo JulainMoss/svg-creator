@@ -1,7 +1,7 @@
 import React from 'react';
 import ShapeItem from './ShapeItem';
 
-const SvgCanvas = ({ shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, canvasRef, canvasSize, bgImage }) => {
+const SvgCanvas = ({ shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, canvasRef, canvasSize, bgImage, selectedShapeId, setSelectedShapeId }) => {
   return (
     <div style={{ 
         border: '2px solid #333', 
@@ -25,7 +25,21 @@ const SvgCanvas = ({ shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, 
         {bgImage && <image href={bgImage} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />}
         
         {/* Renderowanie zapisanych kształtów */}
-        {shapes.map(shape => <ShapeItem key={shape.id} shape={shape} />)}
+        {shapes.map((shape) => (
+            <g 
+                key={shape.id} 
+                onClick={(e) => {
+                e.stopPropagation(); // Zapobiega rozpoczęciu rysowania nowego kształtu
+                setSelectedShapeId(shape.id);
+                }}
+                style={{ cursor: 'pointer' }}
+            >
+                <ShapeItem 
+                shape={shape} 
+                isHovered={selectedShapeId === shape.id} // Opcjonalna ramka zaznaczenia
+                />
+            </g>
+        ))}
 
         {/* Renderowanie podglądu w trakcie rysowania */}
         {previewShape && (
