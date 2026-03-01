@@ -7,33 +7,33 @@ export default function RectSelect({ selectedShape, updateSelectedShape, setSele
             <input 
                 type="color" 
                 value={selectedShape.fill} 
-                onChange={(e) => updateSelectedShape('fill', e.target.value)} 
+                onChange={(e) => updateSelectedShape({fill: e.target.value})} 
             />
 
             <label>Pozycja X:</label>
             <input 
                 type="number" 
                 value={selectedShape.x} 
-                onChange={(e) => updateSelectedShape('x', parseInt(e.target.value))} 
+                onChange={(e) => updateSelectedShape({x: parseInt(e.target.value)})} 
             />
             <label>Pozycja Y:</label>
             <input 
                 type="number" min="0" max="800" 
                 value={selectedShape.y} 
-                onChange={(e) => updateSelectedShape('y', parseInt(e.target.value))} 
+                onChange={(e) => updateSelectedShape({y: parseInt(e.target.value)})} 
             />
 
             <label>Szerokość:</label>
             <input 
                 type="number" min="5" max="500" 
                 value={selectedShape.width} 
-                onChange={(e) => updateSelectedShape('width', parseInt(e.target.value))} 
+                onChange={(e) => updateSelectedShape({width: parseInt(e.target.value)})} 
             />
             <label>Wysokość:</label>
             <input 
                 type="number" min="5" max="500" 
                 value={selectedShape.height} 
-                onChange={(e) => updateSelectedShape('height', parseInt(e.target.value))} 
+                onChange={(e) => updateSelectedShape({height: parseInt(e.target.value)})} 
             />
 
             <button 

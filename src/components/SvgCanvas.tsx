@@ -7,7 +7,7 @@ const SvgCanvas = ({ shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, 
         border: '2px solid #333', 
         background: '#fff',
         maxWidth: '100%',     // Nie szerszy niż ekran
-        maxHeight: `${canvasSize.height}px`,    // Nie wyższy niż wysokość SVG + trochę marginesu
+        maxHeight: `${canvasSize.height + 6}px`,    // Nie wyższy niż wysokość SVG + trochę marginesu
         // maxHeight: '80vh',    // Nie wyższy niż 80% wysokości okna
         overflow: 'auto',     // Pojawią się paski przewijania, gdy SVG będzie za duże
         display: 'inline-block' // Kontener dopasuje się do krawędzi SVG
