@@ -1,6 +1,8 @@
-// import React from 'react';
+import { useRef } from 'react';
 
 const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, shapes, removeShape, downloadSvg, canvasSize, setCanvasSize, handleImageUpload, bgImage, setBgImage }) => {
+  const fileInputRef = useRef(null);
+
   return (
     <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '10px', borderRight: '1px solid #eee', paddingRight: '20px' }}>
       <h2>SVG Builder</h2>
@@ -62,14 +64,20 @@ const Sidebar = ({ selectedType, setSelectedType, color, setColor, addShape, sha
       </button>
       <label>Obraz tła:</label>
       <input 
-        type="file" 
+        type="file"
+        ref={fileInputRef}
         accept="image/*" 
         onChange={handleImageUpload} 
         style={{ fontSize: '12px' }}
       />
       {bgImage && (
         <button 
-          onClick={() => setBgImage('')} 
+          onClick={() => {
+            setBgImage(''); // Czyścimy obrazek z podglądu
+            if (fileInputRef.current) {
+              fileInputRef.current.value = ''; // Czyścimy nazwę pliku w elemencie HTML
+            }
+          }}
           style={{ marginTop: '5px', color: 'red', cursor: 'pointer' }}
         >
           Usuń tło

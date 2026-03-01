@@ -1,13 +1,13 @@
 import React from 'react';
 import ShapeItem from './ShapeItem';
 
-const SvgCanvas = ({ shapes, canvasRef, canvasSize, bgImage }) => {
+const SvgCanvas = ({ shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, canvasRef, canvasSize, bgImage }) => {
   return (
     <div style={{ 
         border: '2px solid #333', 
         background: '#fff',
         maxWidth: '100%',     // Nie szerszy niż ekran
-        maxHeight: `${canvasSize.height + 20}px`,    // Nie wyższy niż wysokość SVG + trochę marginesu
+        maxHeight: `${canvasSize.height}px`,    // Nie wyższy niż wysokość SVG + trochę marginesu
         // maxHeight: '80vh',    // Nie wyższy niż 80% wysokości okna
         overflow: 'auto',     // Pojawią się paski przewijania, gdy SVG będzie za duże
         display: 'inline-block' // Kontener dopasuje się do krawędzi SVG
@@ -17,22 +17,20 @@ const SvgCanvas = ({ shapes, canvasRef, canvasSize, bgImage }) => {
         width={canvasSize.width} 
         height={canvasSize.height} 
         viewBox={`0 0 ${canvasSize.width} ${canvasSize.height}`}
-        xmlns="http://www.w3.org/2000/svg"
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
       >
-        {/* Obrazek tła */}
-        {bgImage && (
-          <image 
-            href={bgImage} 
-            width="100%" 
-            height="100%" 
-            preserveAspectRatio="xMidYMid slice" 
-          />
-        )}
+        
+        {bgImage && <image href={bgImage} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />}
+        
+        {/* Renderowanie zapisanych kształtów */}
+        {shapes.map(shape => <ShapeItem key={shape.id} shape={shape} />)}
 
-        {/* Kształty użytkownika */}
-        {shapes.map((shape) => (
-          <ShapeItem key={shape.id} shape={shape} />
-        ))}
+        {/* Renderowanie podglądu w trakcie rysowania */}
+        {previewShape && (
+          <ShapeItem shape={{ ...previewShape, fill: previewShape.fill + '80' }} /> // '80' dodaje przezroczystość
+        )}
       </svg>
     </div>
   );

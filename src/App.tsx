@@ -8,6 +8,64 @@ const App = () => {
   const [color, setColor] = useState('#3498db');
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 600 });
   const [bgImage, setBgImage] = useState('');
+  const [previewShape, setPreviewShape] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const handleMouseDown = (e) => {
+    // Pobieramy pozycję myszy względem elementu SVG
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setIsDrawing(true);
+    setPreviewShape({
+      id: 'preview',
+      type: selectedType,
+      startX: x,
+      startY: y,
+      x,
+      y,
+      width: 0,
+      height: 0,
+      fill: color
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDrawing || !previewShape) return;
+
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    // Obliczamy wymiary (obsługujemy przeciąganie w każdą stronę)
+    const newWidth = Math.abs(currentX - previewShape.startX);
+    const newHeight = Math.abs(currentY - previewShape.startY);
+    const newX = Math.min(currentX, previewShape.startX);
+    const newY = Math.min(currentY, previewShape.startY);
+
+    setPreviewShape({
+      ...previewShape,
+      x: newX,
+      y: newY,
+      width: newWidth,
+      height: newHeight
+    });
+  };
+
+  const handleMouseUp = () => {
+    if (!isDrawing || !previewShape) return;
+
+    // Zapisujemy kształt na stałe, jeśli nie jest "kropką"
+    if (previewShape.width > 5 || previewShape.height > 5) {
+      setShapes([...shapes, { ...previewShape, id: Date.now() }]);
+    }
+    
+    setIsDrawing(false);
+    setPreviewShape(null);
+  };
   
   // Ref do elementu SVG
   const svgRef = useRef(null);
@@ -57,17 +115,36 @@ const App = () => {
   };
 
   const downloadSvg = () => {
+    console.log(svgRef.current);
     if (!svgRef.current) return;
 
-    // 1. Pobieramy kod XML z elementu SVG
-    const svgData = svgRef.current.outerHTML;
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const svgUrl = URL.createObjectURL(svgBlob);
+    // Klonujemy węzeł, aby nie modyfikować tego, co widzi użytkownik
+    const svgClone = svgRef.current.cloneNode(true);
+    
+    const bgImageInClone = svgClone.querySelector('image');
+    if (bgImageInClone) {
+      bgImageInClone.remove();
+    }
 
-    // 2. Tworzymy tymczasowy link do pobrania
-    const downloadLink = document.createElement('a');
-    downloadLink.href = svgUrl;
-    downloadLink.download = `moj-projekt-${Date.now()}.svg`;
+    // Usuwamy ewentualny podgląd (previewShape), który nie powinien być w pliku
+    const preview = svgClone.querySelector('[id="preview"]');
+    if (preview) preview.remove();
+
+    console.log(svgClone);
+
+    const serializer = new XMLSerializer();
+    let source = serializer.serializeToString(svgClone);
+
+    // Dodajemy nagłówek XML, jeśli go brakuje
+    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+      source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = `projekt-${Date.now()}.svg`;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -90,7 +167,8 @@ const App = () => {
         bgImage={bgImage}
         setBgImage={setBgImage}
       />
-      <SvgCanvas shapes={shapes} canvasRef={svgRef} canvasSize={canvasSize} bgImage={bgImage}/>
+      {/* shapes, previewShape, onMouseDown, onMouseMove, onMouseUp, canvasRef, canvasSize, bgImage */}
+      <SvgCanvas shapes={shapes} previewShape={previewShape} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} canvasRef={svgRef} canvasSize={canvasSize} bgImage={bgImage}/>
     </div>
   );
 };
